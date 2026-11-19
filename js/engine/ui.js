@@ -32,14 +32,14 @@
   function btn(label, act, arg, o) {
     o = o || {};
     const dis = o.disabled ? ' disabled' : '';
-    const bar = o.bar !== undefined ? `<i class="bar" style="width:${Math.round(o.bar * 100)}%"></i>` : '';
+    const bar = o.bar !== undefined ? `<i class="bar" style="width:${(o.bar * 100).toFixed(2)}%"></i>` : '';
     return `<div class="btn${dis}${o.cls ? ' ' + o.cls : ''}" data-act="${act}" data-arg="${esc(arg === undefined ? '' : arg)}">${bar}<b>${label}</b>` +
       (o.sub ? `<small>${o.sub}</small>` : '') + `</div>`;
   }
   const costHtml = cost => Object.keys(cost || {}).map(k =>
     `<span class="${(G.S.res[k] || 0) >= cost[k] ? '' : 'lack'}">${G.name(k)} ${G.fmt(cost[k])}</span>`).join(' ');
   const box = (title, inner) => inner ? `<div class="box"><h3>${title}</h3>${inner}</div>` : '';
-  const bar = (p, txt) => `<div class="pbar"><i style="width:${Math.min(100, Math.round(p * 100))}%"></i><span>${txt || ''}</span></div>`;
+  const bar = (p, txt) => `<div class="pbar"><i style="width:${Math.min(100, p * 100).toFixed(2)}%"></i><span>${txt || ''}</span></div>`;
 
   /* ---------- 各页签 ---------- */
   function tabSettle() {

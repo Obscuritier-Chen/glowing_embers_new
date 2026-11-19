@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>余烬微光</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+  <h1>余烬微光</h1>
+  <span id="clock"></span>
+  <span class="menu"><a data-act="save">保存</a><a data-act="reset">重开</a></span>
+</header>
+<div id="app">
+  <aside id="log"></aside>
+  <main>
+    <nav id="tabs"></nav>
+    <div id="panel"></div>
+  </main>
+  <aside id="stock"></aside>
+</div>
+<div id="overlay"></div>
+
+<!-- 引擎（不含任何具体游戏内容） -->
+<script src="js/engine/core.js"></script>
+<script src="js/engine/systems.js"></script>
+<script src="js/engine/ui.js"></script>
+<!-- 内容：增补内容只需编辑/新增下列文件，并在此加一行 script -->
+<script src="js/content/config.js"></script>
+<script src="js/content/resources.js"></script>
+<script src="js/content/actions.js"></script>
+<script src="js/content/buildings.js"></script>
+<script src="js/content/jobs.js"></script>
+<script src="js/content/research.js"></script>
+<script src="js/content/nodes.js"></script>
+<script src="js/content/events.js"></script>
+<script src="js/content/projects.js"></script>
+<script src="js/content/rules.js"></script>
+</body>
+</html>

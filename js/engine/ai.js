@@ -82,7 +82,7 @@
       resources: G.list('resources').filter(r => r.group !== 'relic').map(r => ({ id: r.id, name: r.name, cap: G.cap(r.id) })).concat([{ id: 'population_total', name: '人口（仅可 -N..+N）' }]),
       resource_aliases: CFG.alias, jobs: G.list('jobs').map(j => ({ id: j.id, name: j.name })), buildings: G.list('buildings').map(b => ({ id: b.id, name: b.name })),
       existing_buffs: G.list('buffs').filter(b => !b.managed).map(b => ({ id: b.id, name: b.name, good: b.good !== false })),
-      buff_keys: ['res:<资源>', 'job:<岗位>|*', 'bld:<建筑>', 'research', 'travel', 'build', 'pop:eat', 'pop:immigrate', 'pop:housing', 'pop:heat', 'cap:<资源>'],
+      buff_keys: ['res:<资源> (pct 或 flat)', 'job:<岗位>|* (仅 pct)', 'bld:<建筑> (仅 pct)', 'research (pct 或 flat)', 'travel (仅 pct)', 'build (仅 pct)', 'pop:eat (仅 pct)', 'pop:immigrate (仅 pct)', 'pop:housing (仅 flat)', 'pop:heat (仅 flat)', 'cap:<资源> (仅 flat)'],
       projects: G.list('projects').map(p => ({ id: p.id, route: p.route, name: p.name })), nodes: G.list('nodes').map(n => ({ id: n.id, name: n.name, ring: n.ring })),
       limits: Object.fromEntries(Object.entries(LIMITS).map(([k, v]) => [k, { resource_delta_ratio_of_cap: v.res, population_delta: v.pop, axis_delta: v.axis, buff_pct_max: v.pct, buff_duration_max_sec: v.dur, permanent_buff_allowed: v.perm }])),
     };
@@ -280,7 +280,7 @@
 世界观：第二次工业革命时代的世界被「白灰之灾」摧毁；白灰会风化一切与它不同质的造物。幸存者在苍白荒原上重建聚落。隐藏法则是「同类相融」——唯有在造物、施法或信仰中接纳并融合白灰，才能免遭侵蚀。第一阶段为中世纪末期农业手工业聚落，随后在科技/魔法/宗教三条路线中分叉；最终真相是旧文明钻探「地脉深井」引发灾变，先辈以生命留下休眠阀。
 你不做算术，也不控制每秒的经营，只通过工具编织事件：
 1. 每次收到 context 后，调用 inject_event 生成 1 个事件（需要时 2 个）。文本中文、克制、有荒原的孤寂感，80~220 字；选项 2~4 个，各自代表不同的倾向（工程实证/触媒秘仪/虔信守望，或冷酷功利/温情守望），并给出清晰的代价。
-2. 资源 id 必须取自 catalog.resources；不要给出 limits 之外的数值。每个选项都要写 hidden_axis_deltas。
+2. 资源 id 必须取自 catalog.resources；不要给出 limits 之外的数值。每个选项都要写 hidden_axis_deltas。buff 要克制：每个事件最多 1~2 个选项带 buff，优先复用 catalog.existing_buffs；自拟 buff 的效果形式必须符合 catalog.buff_keys（pop:heat 只能写 flat 等）。
 3. 节奏：narrative_tension 过低且聚落富足时制造危机；聚落濒临崩溃（饥饿/严寒/tension 高）时，给「带代价的生机」，不要再雪上加霜。
 4. 事件链：用同一 chain_id，在 follow_up_directive 中声明 advance/complete 与触发时机（after_days:N / on_research_complete:any）；收到 chain_due 时续写下一幕并承接 last_player_choice。
 5. reason 为 compress_memory 或 memory_compaction_due 为真时，调用 update_memory 把大事记浓缩到 500 字内，并维护 6~8 条「真相拼图」碎片。

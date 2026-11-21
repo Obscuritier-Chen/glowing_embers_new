@@ -88,7 +88,7 @@
       if (n >= 0) G.add(k, n); else G.take(k, -n);
     }
     if (e.align) for (const k in e.align) S.align[k] = (S.align[k] || 0) + e.align[k];
-    if (e.axes) for (const k in e.axes) S.axes[k] = (S.axes[k] || 0) + e.axes[k];
+    if (e.axes) for (const k in e.axes) S.axes[k] = Math.max(k === 'empathy' ? -100 : 0, Math.min(100, (S.axes[k] || 0) + e.axes[k]));   // 隐式轴限定在 0~100（温情轴 -100~100）
     if (e.ai) G.emit('aiEffect', e.ai);
     if (e.flags) e.flags.forEach(f => S.flags[f] = true);
     if (e.clearFlags) e.clearFlags.forEach(f => delete S.flags[f]);

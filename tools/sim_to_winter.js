@@ -16,6 +16,11 @@
    输出：ai_calls.jsonl（AI 原始工具调用）、ai_events.md（可读转译）、run.json（选择、轴变化、token/费用汇总）
    节奏：AI 请求在途时游戏时间暂停（保证每次请求的事件都会真实出现并被记录）。 */
 'use strict';
+// Node 的 fetch 默认不走系统/环境代理；检测到 HTTPS_PROXY 时自动带 NODE_USE_ENV_PROXY=1 重启自己（否则可能因地区限制 403）
+if ((process.env.HTTPS_PROXY || process.env.https_proxy) && !process.env.NODE_USE_ENV_PROXY) {
+  const r = require('child_process').spawnSync(process.execPath, process.argv.slice(1), { stdio: 'inherit', env: Object.assign({}, process.env, { NODE_USE_ENV_PROXY: '1' }) });
+  process.exit(r.status === null ? 1 : r.status);
+}
 const fs = require('fs'), path = require('path'), vm = require('vm');
 
 /* ---------- 参数 ---------- */

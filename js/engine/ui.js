@@ -200,7 +200,7 @@
       if (done) inner += '<p class="good">已竣工。</p>';
       else if (st.building) inner += bar(st.t / sd.time, '施工中：' + sd.name);
       else if (sd) inner += btn('投入：' + sd.name, 'proj', p.id, { disabled: !G.canPay(sd.cost), sub: costHtml(sd.cost) });
-      return box(p.name, inner, named(p.name, p.desc + '<br>以最先竣工落成的那一座为准，路线将就此锁定。'));
+      return box(p.name, inner, named(p.name, G.projDesc(p) + '<br>以最先竣工落成的那一座为准，路线将就此锁定。'));
     }).join('');
   }
 

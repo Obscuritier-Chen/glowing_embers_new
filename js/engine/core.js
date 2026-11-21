@@ -10,8 +10,14 @@
     const m = (G.defs[type] = G.defs[type] || {});
     list.forEach(d => { if (m[d.id]) console.warn('重复定义', type, d.id); m[d.id] = d; });
   };
-  G.list = type => Object.values(G.defs[type] || {});
-  G.def = (type, id) => (G.defs[type] || {})[id];
+  // 静态内容 + 存档内的动态内容（AI 导演注入的事件/buff/遗物，保存在 S.dyn[type]）
+  const dynOf = type => (G.S && G.S.dyn && G.S.dyn[type]) || {};
+  G.list = type => Object.values(G.defs[type] || {}).concat(Object.values(dynOf(type)));
+  G.def = (type, id) => (G.defs[type] || {})[id] || dynOf(type)[id];
+  G.hooks = {};   // 可选钩子：holdStatic() 返回 true 时暂停静态随机事件（AI 导演接管时使用）
+  const subs = {};
+  G.on = (name, fn) => (subs[name] = subs[name] || []).push(fn);
+  G.emit = (name, data) => (subs[name] || []).forEach(fn => { try { fn(data); } catch (e) { console.error('事件回调出错', name, e); } });
   G.config = o => Object.assign(G.cfg, o);
   G.rule = r => G.rules.push(r);
 
@@ -33,6 +39,9 @@
       cd: {}, nodes: {}, exps: [], proj: {}, routes: [],
       ev: { cd: {}, done: {}, sched: [], queue: [], nextRoll: 30, active: null },
       rt: {}, bEff: {}, jEff: {}, buffs: [], log: [], uid: 1,
+      axes: { cohesion: 50, empathy: 0, assimilation: 0, tension: 30 },   // AI 导演维护的隐式轴
+      director: { memory: { macro: '', truth: [] }, history: [], chains: {}, pool: [], lastDiscovery: '', lastCompress: 0, lastInject: -1e9 },
+      dyn: { events: {}, buffs: {}, resources: {}, projects: {} },
     };
     const st = G.cfg.start || {};
     Object.assign(S.res, st.res || {});
@@ -55,6 +64,7 @@
     if (q.stage && S.stage < q.stage) return false;
     if (q.route && S.route !== q.route) return false;
     if (q.pop && S.pop < q.pop) return false;
+    if (q.jobs) for (const k in q.jobs) if ((S.jobs[k] || 0) < q.jobs[k]) return false;
     if (q.align) for (const k in q.align) if (S.align[k] < q.align[k]) return false;
     if (q.any && !q.any.some(x => G.ok(x))) return false;
     if (q.fn && !q.fn(S, G)) return false;
@@ -78,6 +88,8 @@
       if (n >= 0) G.add(k, n); else G.take(k, -n);
     }
     if (e.align) for (const k in e.align) S.align[k] = (S.align[k] || 0) + e.align[k];
+    if (e.axes) for (const k in e.axes) S.axes[k] = (S.axes[k] || 0) + e.axes[k];
+    if (e.ai) G.emit('aiEffect', e.ai);
     if (e.flags) e.flags.forEach(f => S.flags[f] = true);
     if (e.clearFlags) e.clearFlags.forEach(f => delete S.flags[f]);
     if (e.pop) G.addPop(e.pop);

@@ -50,3 +50,14 @@ em { color:var(--dim); font-style:normal; font-size:12px; }
 .buff span { position:relative; }
 .buff.pos { color:var(--good); border-color:var(--good); } .buff.pos i { background:var(--good); }
 .buff.neg { color:var(--bad); border-color:var(--bad); } .buff.neg i { background:var(--bad); }
+
+/* AI 导演面板 */
+#aipanel { display:none; position:fixed; inset:0; z-index:15; background:#000a; align-items:center; justify-content:center; }
+#aipanel.show { display:flex; }
+.aibox { width:min(560px,94vw); max-height:92vh; overflow:auto; background:var(--bg); border:1px solid var(--fg); padding:18px 22px; }
+.aibox h2 { margin:0 0 8px; font-size:17px; font-weight:normal; color:var(--ember); }
+.aibox label { display:block; margin:6px 0; font-size:13px; } .aibox label.chk { display:flex; gap:6px; align-items:center; }
+.aibox input[type=text], .aibox input[type=password], .aibox select { display:block; width:100%; padding:3px 6px; border:1px solid var(--line); background:transparent; color:var(--fg); font:inherit; }
+.aibox textarea { width:100%; height:110px; margin:8px 0; padding:6px; border:1px solid var(--line); background:transparent; color:var(--fg); font:12px/1.4 monospace; }
+.airow { display:flex; gap:8px; flex-wrap:wrap; }
+.ailog { max-height:110px; overflow:auto; margin:8px 0 0; font-size:11px; color:var(--dim); white-space:pre-wrap; }

@@ -54,6 +54,7 @@
       G.S.buffs.push({ id: d.id, t: dur === undefined ? null : dur, stacks: spec.stacks || 1 });
       if (!d.silent) G.log('【' + d.name + '】' + (d.good === false ? '缠上了聚落。' : '降临了聚落。'), d.good === false ? 'bad' : 'good');
       if (d.onApply) G.apply(d.onApply);
+      G.emit('buff', { id: d.id });
     }
     G.derive();
   };
@@ -195,6 +196,7 @@
       R.done[r.id] = true; R.current = null; delete R.progress[r.id];
       G.log('研究完成：' + r.name, 'good');
       G.apply(r.effects);
+      G.emit('research', { id: r.id, name: r.name });
     }
   }
 
@@ -218,12 +220,14 @@
     a.result = G.val(c.result) || '';
     a.next = c.next || null;
     if (c.schedule) E.sched.push({ id: c.schedule.event, at: G.S.t + c.schedule.delay });
+    G.emit('choice', { eventId: a.id, title: G.val(ev.title), index: i, label: G.val(c.text) });
   };
   G.closeEvent = function () {
     const E = G.S.ev, a = E.active; if (!a) return;
     E.active = null;
     const nxt = a.next || E.queue.shift();
     G.paused = false;
+    G.emit('eventClosed', { id: a.id });
     if (nxt) G.trigger(nxt);
   };
   function tickEvents(dt) {
@@ -233,7 +237,8 @@
     const evs = G.list('events');
     // 进程推进事件：条件满足必触发
     for (const ev of evs) if (ev.type === 'milestone' && !E.done[ev.id] && G.ok(ev.requires)) { E.done[ev.id] = true; G.trigger(ev.id); return; }
-    // 随机事件
+    // 随机事件（AI 导演正常工作时由其接管，静态事件池作为降级兜底）
+    if (G.hooks.holdStatic && G.hooks.holdStatic()) return;
     if (S.t < E.nextRoll) return;
     E.nextRoll = S.t + (G.cfg.eventInterval || 25);
     if (!G.chance(G.cfg.eventChance === undefined ? 0.6 : G.cfg.eventChance)) return;
@@ -276,6 +281,7 @@
       e.bag[l.res] = (e.bag[l.res] || 0) + q; got.push(G.name(l.res) + '×' + q);
     }
     G.log(n.name + '：搜刮所得 ' + (got.length ? got.join('、') : '一无所获') + '（探索度 ' + Math.round(ns.p) + '%）');
+    G.emit('expSearch', { node: n.id, name: n.name, got, progress: ns.p });
     if (n.danger && G.chance(n.danger) && e.members > 0) {
       e.members--; G.S.pop--;
       G.log('队伍中有人再也没有从废墟的阴影里走出来。', 'bad');
@@ -291,7 +297,7 @@
       const n = G.def('nodes', e.node);
       if (e.phase === 'at') continue;
       e.t += dt; if (e.t < e.dur) continue;
-      if (e.phase === 'go') { e.phase = 'at'; G.log('探索队抵达了' + n.name + '。'); }
+      if (e.phase === 'go') { e.phase = 'at'; G.log('探索队抵达了' + n.name + '。'); G.emit('expArrive', { node: n.id, name: n.name }); }
       else if (e.phase === 'search') { e.phase = 'at'; doSearch(e, n); }
       else if (e.phase === 'back') {
         for (const k in e.bag) G.add(k, e.bag[k]);
@@ -311,7 +317,9 @@
     if (!r.length) r.push(['tech', 'magic', 'faith'].sort((a, b) => S.align[b] - S.align[a])[0]);
     S.routes = r;
     G.log('可立项的文明奠基工程已确定。', 'good');
+    G.emit('routesUnlocked', { routes: r });
   };
+  G.projDesc = p => ((G.S.dyn.projects[p.id] || {}).desc) || p.desc;   // AI 可为工程改写叙事文本
   G.projState = id => (G.S.proj[id] = G.S.proj[id] || { stage: 0, building: false, t: 0 });
   G.projAvailable = p => G.S.routes.includes(p.route) && !G.S.route;
   G.startProjStage = function (id) {
@@ -330,6 +338,8 @@
       if (st.stage >= p.stages.length && !G.S.route) {
         G.S.route = p.route; G.S.stage = 2;
         G.apply(p.onComplete);
+        const fl = G.S.dyn.projects[p.id]; if (fl && fl.buff) G.apply({ buff: fl.buff });
+        G.emit('projectDone', { id: p.id, route: p.route });
       }
     }
   }
@@ -348,7 +358,9 @@
   /* ---------- 主循环 ---------- */
   G.tick = function (dt) {
     const S = G.S;
+    const day0 = Math.floor(S.t / (G.cfg.dayLength || 120));
     S.t += dt;
+    if (Math.floor(S.t / (G.cfg.dayLength || 120)) !== day0) G.emit('day', { day: day0 + 2 });
     G.derive();
     // 建筑被动产出
     for (const b of G.list('buildings')) {

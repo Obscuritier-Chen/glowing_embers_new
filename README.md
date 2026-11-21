@@ -38,3 +38,12 @@ URL 参数：`?speed=10` 加速，`?debug` 显示隐式倾向点数。存档在 
 - Buff 的 `pct` 为百分比、`flat` 为固定数值；`key` 可为 `res:资源`、`job:岗位`、`bld:建筑`、`research`、`travel`、`build`、`pop:eat`、`pop:immigrate`、`pop:housing`、`pop:heat`、`cap:资源`。引擎在 `derive()` 中聚合，生产/研究/人口规则通过 `G.mod(key)`、`G.flat(key)` 读取。
 - 条目注释不直接显示，鼠标悬停弹出提示框；资源行悬停显示净产出与各来源（建筑、岗位、buff、以及 `Game.rule` 的 `rates` 声明）。
 - 通配键：`job:*`、`res:*`、`bld:*` 作用于该类全部条目。聚落状态（饥饿/寒冷/严寒）也是 buff，由 `rules.js` 的 `status` 规则按条件自动授予/移除，惩罚数值在 `buffs.js` 调整。
+
+## AI 导演接口（`js/engine/ai.js`，参考 AI_DIRECTOR_DESIGN.md）
+游戏保持纯前端，文档中的 HTTP 接口实现为浏览器内 JS API（`window.GameAI`）：
+- `GameAI.getContext()` 导出 `GameContextPayload`（世界、聚落、探索、故事线记忆、隐式轴）；`GameAI.getCatalog()` 导出合法资源/岗位/建筑 id 与数值上限。
+- `GameAI.handleToolCall(name, input)` 统一工具入口：`inject_event`、`update_memory`、`adjust_axes`、`set_project_flavor`（JSON Schema 见 `GameAI.tools`）。
+- 注入的事件会被校验并二次钳制（资源按容量比例、人口 ±N、隐式轴 ±N、buff 幅度/时长），翻译成引擎事件（受限 DSL，文本与数值分离，文本已转义）；进入待触发池，空闲时弹出。事件链、记忆压缩、遗物、奠基工程叙事、探索奇遇都有对应触发时机。
+- 接入方式：① 页头「导演」面板配置 OpenAI 兼容 / Anthropic 接口（浏览器直连，密钥仅存本机）；② `GameAI.setProvider(async req => toolCalls)` 自带适配器；③ 面板开启 postMessage 桥，外部页面发送 `{type:'glowing_embers:get_context'}` / `{type:'glowing_embers:tool_call', name, input}`。
+- AI 未启用、失败 3 次或长时间无响应时，静态事件池自动接管。
+- 隐式轴存于 `S.axes` 与 `S.align`；`dyn` 存档段保存 AI 生成的事件、buff、遗物。

@@ -21,3 +21,14 @@ Game.define('buffs', [
   { id: 'scholar_legacy', name: '老学者的遗泽', good: true, desc: '手札里的思路仍在启发每一位学者。（永久）',
     effects: [{ key: 'research', pct: 0.15 }] },
 ]);
+
+/* 状态型 buff：由 rules.js 的 status 规则按聚落状态自动授予/移除（silent 不写日志，managed 仅作标注） */
+Game.define('buffs', [
+  { id: 'relic_insight', name: '旧世的启发', good: true, desc: '研读前文明遗物带来的新思路。（永久）', effects: [{ key: 'research', pct: 0.25 }] },
+  { id: 'hunger', name: '饥饿', good: false, managed: true, desc: '口粮耗尽，所有人饿着肚子干活。持续太久会有人倒下。',
+    effects: [{ key: 'job:*', pct: -0.3 }, { key: 'research', pct: -0.3 }] },
+  { id: 'chilly', name: '寒冷', good: false, managed: true, desc: '供暖不足，手指冻得发僵。',
+    effects: [{ key: 'job:*', pct: -0.15 }] },
+  { id: 'freezing', name: '严寒', good: false, managed: true, desc: '火太弱了。人们挤在一起发抖，没有流民愿意靠近；寒夜会夺走生命。',
+    effects: [{ key: 'job:*', pct: -0.3 }, { key: 'pop:immigrate', pct: -1 }] },
+]);

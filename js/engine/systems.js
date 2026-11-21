@@ -29,7 +29,10 @@
     for (const j in S.jobs) if (S.jobs[j] > (D.slots[j] || 0)) S.jobs[j] = D.slots[j] || 0;
   };
   // 百分比加成（含研究/建筑/buff），下限 0；固定数值加成
-  G.mod = key => Math.max(0, 1 + (G.S.mods[key] || 0) + ((G.D.mods || {})[key] || 0));
+  G.mod = key => {
+    const w = key.split(':')[0] + ':*', M = G.D.mods || {}; // 通配：job:* res:* bld:* 作用于该类全部条目
+    return Math.max(0, 1 + (G.S.mods[key] || 0) + (M[key] || 0) + (M[w] || 0));
+  };
   G.flat = key => (G.D.flat || {})[key] || 0;
 
   /* ---------- Buff ----------
@@ -49,9 +52,9 @@
       if (cur.t !== null) cur.t = dur === undefined ? null : Math.max(cur.t, dur);
     } else {
       G.S.buffs.push({ id: d.id, t: dur === undefined ? null : dur, stacks: spec.stacks || 1 });
+      if (!d.silent) G.log('【' + d.name + '】' + (d.good === false ? '缠上了聚落。' : '降临了聚落。'), d.good === false ? 'bad' : 'good');
       if (d.onApply) G.apply(d.onApply);
     }
-    G.log('【' + d.name + '】' + (d.good === false ? '缠上了聚落。' : '降临了聚落。'), d.good === false ? 'bad' : 'good');
     G.derive();
   };
   G.removeBuff = function (id) {

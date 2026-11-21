@@ -37,3 +37,4 @@ URL 参数：`?speed=10` 加速，`?debug` 显示隐式倾向点数。存档在 
 ## Buff 与悬浮提示
 - Buff 的 `pct` 为百分比、`flat` 为固定数值；`key` 可为 `res:资源`、`job:岗位`、`bld:建筑`、`research`、`travel`、`build`、`pop:eat`、`pop:immigrate`、`pop:housing`、`pop:heat`、`cap:资源`。引擎在 `derive()` 中聚合，生产/研究/人口规则通过 `G.mod(key)`、`G.flat(key)` 读取。
 - 条目注释不直接显示，鼠标悬停弹出提示框；资源行悬停显示净产出与各来源（建筑、岗位、buff、以及 `Game.rule` 的 `rates` 声明）。
+- 通配键：`job:*`、`res:*`、`bld:*` 作用于该类全部条目。聚落状态（饥饿/寒冷/严寒）也是 buff，由 `rules.js` 的 `status` 规则按条件自动授予/移除，惩罚数值在 `buffs.js` 调整。

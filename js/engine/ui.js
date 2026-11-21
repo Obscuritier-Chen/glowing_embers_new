@@ -40,8 +40,9 @@
   // 加成键 → 中文
   function keyLabel(key, flat) {
     const [p, id] = key.split(':');
-    const nm = { res: () => G.name(id) + (flat ? '' : '产出'), job: () => (G.def('jobs', id) || {}).name + '效率',
-      bld: () => (G.def('buildings', id) || {}).name + '效率', cap: () => G.name(id) + '容量' }[p];
+    const all = id === '*';
+    const nm = { res: () => all ? '全部资源产出' : G.name(id) + (flat ? '' : '产出'), job: () => all ? '全体岗位效率' : (G.def('jobs', id) || {}).name + '效率',
+      bld: () => all ? '全体建筑效率' : (G.def('buildings', id) || {}).name + '效率', cap: () => G.name(id) + '容量' }[p];
     if (nm) return nm();
     return ({ research: '研究速度', travel: '行军速度', build: '施工速度', 'pop:eat': '人口口粮消耗', 'pop:immigrate': '移民几率',
       'pop:housing': '人口上限', 'pop:heat': '供暖' })[key] || key;

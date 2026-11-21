@@ -7,6 +7,6 @@ Game.define('research', [
   { id: 'wind_power', name: '水利与风力传动', desc: '解锁风车磨坊。', cost: { notes: 3, wood: 30 }, time: 45, requires: { research: ['three_field'] } },
   { id: 'smelting', name: '高炉锻铁', desc: '解锁铁匠铺，煤块炼成生铁。', cost: { notes: 3, coal: 10, stone: 10 }, time: 45, requires: { research: ['prospecting'] } },
   { id: 'guild_arch', name: '行会石木建筑学', desc: '解锁石砌排屋与市政厅。', cost: { notes: 4, stone: 30 }, time: 50, requires: { research: ['wind_power'] } },
-  { id: 'relic_study', name: '旧世遗物研读', desc: '瓶颈课题示例：必须持有前文明遗物。研究速度 +25%。',
-    cost: { notes: 3, relic_governor: 1 }, time: 40, requires: { research: ['scouting'] }, effects: { mods: { research: 0.25 }, align: { tech: 1 } } },
+  { id: 'relic_study', name: '旧世遗物研读', desc: '瓶颈课题示例：必须持有前文明遗物。获得永久增益「旧世的启发」。',
+    cost: { notes: 3, relic_governor: 1 }, time: 40, requires: { research: ['scouting'] }, effects: { buff: 'relic_insight', align: { tech: 1 } } },
 ]);

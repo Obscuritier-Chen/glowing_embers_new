@@ -1,7 +1,8 @@
 :root { --bg:#ffffff; --fg:#3a332d; --dim:#7d746a; --line:#d8d0c6; --ember:#b8622a; --good:#4f6b2e; --bad:#a8432c; }
 * { box-sizing:border-box; }
-body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.6 "Noto Serif SC","Songti SC",SimSun,serif; transition:background 3s; }
-body.night { background:#faf7f2; }
+@property --bg { syntax:'<color>'; inherits:true; initial-value:#ffffff; }
+body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.6 "Noto Serif SC","Songti SC",SimSun,serif; transition:--bg 3s; }
+body.night { --bg:#faf7f2; }
 header { display:flex; align-items:baseline; gap:20px; padding:10px 20px; border-bottom:1px solid var(--line); }
 header h1 { margin:0; font-size:20px; letter-spacing:6px; color:var(--ember); font-weight:normal; text-shadow:none; }
 #clock { color:var(--dim); flex:1; }

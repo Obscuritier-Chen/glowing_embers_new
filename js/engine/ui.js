@@ -125,7 +125,7 @@
   function tabSettle() {
     const S = G.S;
     const acts = G.list('actions').filter(a => G.ok(a.requires) || S.cd[a.id] > 0).map(a =>
-      btn(a.name, 'action', a.id, { disabled: !G.actionOk(a), sub: costHtml(a.cost), tip: a.desc && named(a.name, a.desc), bar: a.cooldown ? (S.cd[a.id] || 0) / a.cooldown : undefined })).join('');
+      btn(a.name, 'action', a.id, { disabled: !G.actionOk(a), sub: costHtml(a.cost), tip: a.desc && named(a.name, a.desc), bar: a.cooldown && S.cd[a.id] > 0 ? S.cd[a.id] / a.cooldown : undefined })).join('');
     const blds = G.list('buildings').filter(G.buildingVisible).map(b => {
       const n = S.bld[b.id] || 0;
       return btn(`${b.name}${n ? ' ×' + n : ''}`, 'build', b.id, { disabled: !G.canBuild(b), sub: (b.max && n >= b.max ? '已建成' : costHtml(G.bCost(b))), tip: buildingTip(b) });

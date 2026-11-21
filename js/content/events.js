@@ -15,10 +15,10 @@ Game.define('events', [
   { id: 'cough', title: '灰雾引起的咳疾', requires: { pop: 3 }, weight: 2, cooldown: 400,
     text: '灰雾钻进了几个人的肺里，窝棚里整夜都是干咳声。',
     choices: [
-      { text: '用木炭与棉纱缝制多层面罩', cost: { wood: 8 }, effects: { align: { tech: 2 } }, result: '面罩挡住了大部分灰尘，咳声渐渐稀了。' },
-      { text: '以白灰为触媒，蒸馏苦艾炼制镇咳药', cost: { ash: 3 }, effects: { align: { magic: 2 } }, result: '药汤泛着微光，喝下去的人沉沉睡去。' },
-      { text: '守夜人彻夜在火塘边诵经抚慰病患', cost: { food: 4, wood: 3 }, effects: { align: { faith: 2 } }, result: '低沉的诵经声里，人们竟觉得暖和了些。' },
-      { text: '听天由命', effects: { pop: -1 }, result: '咳声停了。也有一个人，再没有醒来。' },
+      { text: '用木炭与棉纱缝制多层面罩', cost: { wood: 8 }, effects: { align: { tech: 2 }, buff: 'filter_masks' }, result: '面罩挡住了大部分灰尘，咳声渐渐稀了。' },
+      { text: '以白灰为触媒，蒸馏苦艾炼制镇咳药', cost: { ash: 3 }, effects: { align: { magic: 2 }, buff: 'tonic' }, result: '药汤泛着微光，喝下去的人沉沉睡去。' },
+      { text: '守夜人彻夜在火塘边诵经抚慰病患', cost: { food: 4, wood: 3 }, effects: { align: { faith: 2 }, buff: 'vigil_comfort' }, result: '低沉的诵经声里，人们竟觉得暖和了些。' },
+      { text: '听天由命', effects: { pop: -1, buff: 'ash_cough' }, result: '咳声停了。也有一个人，再没有醒来。' },
     ] },
   { id: 'windmill_rust', title: '风车轴的异常锈蚀', requires: { bld: { windmill: 1 } }, weight: 2, cooldown: 400,
     text: '磨坊主发现风车主轴一夜之间爬满了白斑，铁在白灰里脆得像饼干。',
@@ -26,12 +26,12 @@ Game.define('events', [
       { text: '试着在铁水里掺入定量白灰重铸', cost: { iron: 3, ash: 2 }, effects: { align: { tech: 2 } }, result: '新轴泛着暗哑的灰光，三天了，没有一点锈。' },
       { text: '在轴上涂抹白灰与银粉的符线', cost: { ash: 4 }, effects: { align: { magic: 2 } }, result: '符线暗了又亮。铁，似乎认下了这层灰。' },
       { text: '全体祈祷，并向风车撒下受灰礼', cost: { food: 5 }, effects: { align: { faith: 2 } }, result: '人们额上涂着灰，轴上的白斑停止了蔓延。' },
-      { text: '换一根木轴凑合', cost: { wood: 20 }, result: '木轴转得很慢，但至少不会碎。' },
+      { text: '换一根木轴凑合', cost: { wood: 20 }, effects: { buff: 'rust_loss' }, result: '木轴转得很慢，但至少不会碎。' },
     ] },
   { id: 'night_knock', title: '风雪夜的敲门声', requires: { pop: 2 }, weight: 1.5, cooldown: 300,
     text: '深夜，有人在敲窝棚的木板。外面是风雪，和一个看不清脸的身影。',
     choices: [
-      { text: '开门，让他进来取暖', cost: { food: 4 }, effects: { pop: 1, align: { faith: 1 } }, result: '陌生人哆嗦着喝下热水。他说自己曾是个木匠。' },
+      { text: '开门，让他进来取暖', cost: { food: 4 }, effects: { pop: 1, align: { faith: 1 }, buff: 'carpenter' }, result: '陌生人哆嗦着喝下热水。他说自己曾是个木匠。' },
       { text: '隔着门板递出一块口粮', cost: { food: 2 }, result: '敲门声停了。清晨，门外只剩一行脚印。' },
       { text: '不予理会', result: '风声盖过了一切。' },
     ] },
@@ -59,7 +59,7 @@ Game.define('events', [
     ] },
   { id: 'scholar_3', type: 'manual', title: '老学者的炼金手札（三）', once: true,
     text: '一个清晨，老学者没有再起来。他的手札整齐地摞在枕边，最后一页写着：\n「灰不是敌人。别硬抗。」',
-    choices: [{ text: '安葬他，珍藏手札', effects: { res: { notes: 3, relic_codebook: 1 } }, result: '你把半本密码簿也放在了手札上面——那是他一直不离身的东西。' }] },
+    choices: [{ text: '安葬他，珍藏手札', effects: { res: { notes: 3, relic_codebook: 1 }, buff: 'scholar_legacy' }, result: '你把半本密码簿也放在了手札上面——那是他一直不离身的东西。' }] },
 
   /* ===== 第二阶段入口（由奠基工程竣工触发） ===== */
   { id: 'stage2_tech', type: 'manual', title: '蒸汽核心点燃', text: '白灰掺炼的锅炉发出低沉的轰鸣，久违的汽笛撕开荒原的寂静。\n聚落迈入【第二阶段·科技路线（蒸汽时代）】。\n\n（最小演示到此结束，后续内容可按 README 继续增补。）', choices: [{ text: '继续', result: '' }] },

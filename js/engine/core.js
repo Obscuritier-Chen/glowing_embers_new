@@ -32,7 +32,7 @@
       research: { done: {}, progress: {}, current: null },
       cd: {}, nodes: {}, exps: [], proj: {}, routes: [],
       ev: { cd: {}, done: {}, sched: [], queue: [], nextRoll: 30, active: null },
-      rt: {}, bEff: {}, log: [], uid: 1,
+      rt: {}, bEff: {}, jEff: {}, buffs: [], log: [], uid: 1,
     };
     const st = G.cfg.start || {};
     Object.assign(S.res, st.res || {});
@@ -86,6 +86,8 @@
     if (e.stage) S.stage = Math.max(S.stage, e.stage);
     if (e.log) G.log(G.val(e.log));
     if (e.schedule) S.ev.sched.push({ id: e.schedule.event, at: S.t + e.schedule.delay });
+    if (e.buff) [].concat(e.buff).forEach(b => G.addBuff(b));          // 'id' 或 {id, duration, stacks}
+    if (e.removeBuff) [].concat(e.removeBuff).forEach(id => G.removeBuff(id));
     if (e.unlockRoutes) G.unlockRoutes();
     if (e.fn) e.fn(S, G);
     G.derive();
@@ -96,7 +98,7 @@
   G.cap = function (id) {
     const d = G.def('resources', id);
     if (d && d.cap) return d.cap;
-    return (G.cfg.baseCap || 100) + ((G.D.storage || {})[id] || 0);
+    return Math.max(0, (G.cfg.baseCap || 100) + ((G.D.storage || {})[id] || 0) + G.flat('cap:' + id));
   };
   G.add = function (id, n) {
     const S = G.S, c = G.cap(id), before = S.res[id] || 0;

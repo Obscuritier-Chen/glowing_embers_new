@@ -13,11 +13,91 @@
       for (const k in b.mods || {}) D.mods[k] = (D.mods[k] || 0) + b.mods[k] * n;
       D.heat += (b.heat || 0) * n * (S.bEff[b.id] === undefined ? 1 : S.bEff[b.id]);
     }
+    // buff：pct 累加进 mods（百分比），flat 累加进 flat（固定数值）
+    D.flat = {};
+    for (const bf of S.buffs) {
+      const d = G.def('buffs', bf.id); if (!d) continue;
+      for (const e of d.effects || []) {
+        if (e.pct) D.mods[e.key] = (D.mods[e.key] || 0) + e.pct * bf.stacks;
+        if (e.flat) D.flat[e.key] = (D.flat[e.key] || 0) + e.flat * bf.stacks;
+      }
+    }
+    D.housing = Math.max(0, D.housing + (D.flat['pop:housing'] || 0));
+    D.heat = Math.max(0, D.heat + (D.flat['pop:heat'] || 0));
     G.D = D;
     // 岗位不得超过槽位
     for (const j in S.jobs) if (S.jobs[j] > (D.slots[j] || 0)) S.jobs[j] = D.slots[j] || 0;
   };
-  G.mod = key => 1 + (G.S.mods[key] || 0) + (G.D.mods[key] || 0);
+  // 百分比加成（含研究/建筑/buff），下限 0；固定数值加成
+  G.mod = key => Math.max(0, 1 + (G.S.mods[key] || 0) + ((G.D.mods || {})[key] || 0));
+  G.flat = key => (G.D.flat || {})[key] || 0;
+
+  /* ---------- Buff ----------
+     定义：{id,name,desc,good,duration(秒，省略=永久),stack:'refresh'|'stack'|'ignore',maxStacks,
+            effects:[{key, pct}|{key, flat}], onApply, onExpire}
+     key：'res:资源'(产出%/固定每秒) 'job:岗位' 'bld:建筑' 'research' 'travel' 'build'
+          'pop:eat' 'pop:immigrate' 'pop:housing' 'pop:heat' 'cap:资源'(固定上限) */
+  G.hasBuff = id => G.S.buffs.some(b => b.id === id);
+  G.addBuff = function (spec) {
+    spec = typeof spec === 'string' ? { id: spec } : spec;
+    const d = G.def('buffs', spec.id); if (!d) return console.warn('未知buff', spec.id);
+    const dur = spec.duration !== undefined ? spec.duration : d.duration;
+    const cur = G.S.buffs.find(b => b.id === d.id);
+    if (cur) {
+      if (d.stack === 'ignore') return;
+      if (d.stack === 'stack') cur.stacks = Math.min(d.maxStacks || 99, cur.stacks + (spec.stacks || 1));
+      if (cur.t !== null) cur.t = dur === undefined ? null : Math.max(cur.t, dur);
+    } else {
+      G.S.buffs.push({ id: d.id, t: dur === undefined ? null : dur, stacks: spec.stacks || 1 });
+      if (d.onApply) G.apply(d.onApply);
+    }
+    G.log('【' + d.name + '】' + (d.good === false ? '缠上了聚落。' : '降临了聚落。'), d.good === false ? 'bad' : 'good');
+    G.derive();
+  };
+  G.removeBuff = function (id) {
+    const i = G.S.buffs.findIndex(b => b.id === id); if (i < 0) return;
+    G.S.buffs.splice(i, 1); G.derive();
+  };
+  function tickBuffs(dt) {
+    for (const b of G.S.buffs.slice()) {
+      if (b.t === null) continue;
+      b.t -= dt;
+      if (b.t > 0) continue;
+      const d = G.def('buffs', b.id);
+      G.S.buffs.splice(G.S.buffs.indexOf(b), 1);
+      if (d) { G.log('【' + d.name + '】消退了。'); if (d.onExpire) G.apply(d.onExpire); }
+    }
+    // 固定数值的资源增减（每秒）
+    for (const k in G.D.flat) if (k.startsWith('res:')) {
+      const id = k.slice(4), v = G.D.flat[k] * dt;
+      if (v > 0) G.add(id, v); else G.take(id, -v);
+    }
+  }
+
+  /* ---------- 资源产耗来源明细（供悬浮提示用） ---------- */
+  G.rates = function (id) {
+    const S = G.S, out = [], m = G.mod('res:' + id);
+    for (const b of G.list('buildings')) {
+      const n = S.bld[b.id] || 0; if (!n) continue;
+      const e = S.bEff[b.id] === undefined ? 1 : S.bEff[b.id];
+      if (b.produce && b.produce[id]) out.push({ src: b.name + ' ×' + n, rate: b.produce[id] * n * e * G.mod('bld:' + b.id) * m });
+      if (b.consume && b.consume[id]) out.push({ src: b.name + ' ×' + n, rate: -b.consume[id] * n * e });
+    }
+    for (const j of G.list('jobs')) {
+      const w = S.jobs[j.id] || 0; if (!w) continue;
+      const e = S.jEff[j.id] === undefined ? 1 : S.jEff[j.id];
+      if (j.produce && j.produce[id]) out.push({ src: j.name + ' ×' + w, rate: j.produce[id] * w * e * G.mod('job:' + j.id) * m });
+      if (j.consume && j.consume[id]) out.push({ src: j.name + ' ×' + w, rate: -j.consume[id] * w * e });
+    }
+    for (const bf of S.buffs) {
+      const d = G.def('buffs', bf.id);
+      for (const e of d.effects || []) if (e.key === 'res:' + id && e.flat) out.push({ src: d.name, rate: e.flat * bf.stacks });
+    }
+    for (const r of G.rules) if (r.rates && r.rates[id]) {
+      const v = r.rates[id](S, G); if (v) out.push({ src: r.label || r.id, rate: v });
+    }
+    return out;
+  };
 
   /* ---------- 建筑 ---------- */
   G.bCost = function (b) {
@@ -73,7 +153,7 @@
     if (eff <= 0) return 0;
     for (const k in cons) G.take(k, cons[k] * count * dt * eff);
     const m = G.mod(modKey);
-    for (const k in def.produce || {}) G.add(k, def.produce[k] * count * dt * eff * m);
+    for (const k in def.produce || {}) G.add(k, def.produce[k] * count * dt * eff * m * G.mod('res:' + k));
     return eff;
   }
 
@@ -96,7 +176,7 @@
   G.researchRate = () => {
     let w = 0;
     for (const j of G.list('jobs')) w += (G.S.jobs[j.id] || 0) * (j.research || 0);
-    return w * G.mod('research');
+    return Math.max(0, w * G.mod('research') + G.flat('research'));
   };
   G.startResearch = function (id) {
     const R = G.S.research, r = G.def('research', id);
@@ -273,7 +353,8 @@
       if (b.produce || b.consume || b.heat) S.bEff[b.id] = n ? produce(b, n, dt, 'bld:' + b.id) : 1;
     }
     // 岗位产出
-    for (const j of G.list('jobs')) produce(j, S.jobs[j.id] || 0, dt, 'job:' + j.id);
+    for (const j of G.list('jobs')) { const n = S.jobs[j.id] || 0; S.jEff[j.id] = n ? produce(j, n, dt, 'job:' + j.id) : 1; }
+    tickBuffs(dt);
     tickResearch(dt);
     tickExps(dt);
     tickProj(dt);

@@ -47,3 +47,11 @@ URL 参数：`?speed=10` 加速，`?debug` 显示隐式倾向点数。存档在 
 - 接入方式：① 页头「导演」面板配置 OpenAI 兼容 / Anthropic 接口（浏览器直连，密钥仅存本机）；② `GameAI.setProvider(async req => toolCalls)` 自带适配器；③ 面板开启 postMessage 桥，外部页面发送 `{type:'glowing_embers:get_context'}` / `{type:'glowing_embers:tool_call', name, input}`。
 - AI 未启用、失败 3 次或长时间无响应时，静态事件池自动接管。
 - 隐式轴存于 `S.axes` 与 `S.align`；`dyn` 存档段保存 AI 生成的事件、buff、遗物。
+
+## 自动模拟脚本（`tools/sim_to_winter.js`）
+无界面、不改游戏代码：用 Node 加载 `index.html` 列出的脚本，自动玩家打到「长冬将至」，真实调用 AI 并记录它注入的全部内容。
+```
+OPENROUTER_API_KEY=sk-... node tools/sim_to_winter.js --model <模型id>
+node tools/sim_to_winter.js --mock        # 不联网的假 AI，零成本验证流程
+```
+参数 `--seed --bias tech|magic|faith|random --max-days --max-real --period-days --save-context --out`。输出到 `tools/out/`（已忽略）：`ai_calls.jsonl`（AI 原始工具调用）、`ai_events.md`（可读转译）、`run.json`（选择、轴变化、token 与费用）。AI 请求在途时游戏时间暂停，保证每次请求都有对应事件被记录。

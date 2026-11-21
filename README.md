@@ -55,3 +55,8 @@ OPENROUTER_API_KEY=sk-... node tools/sim_to_winter.js --model <模型id>
 node tools/sim_to_winter.js --mock        # 不联网的假 AI，零成本验证流程
 ```
 参数 `--seed --bias tech|magic|faith|random --max-days --max-real --period-days --save-context --out`。输出到 `tools/out/`（已忽略）：`ai_calls.jsonl`（AI 原始工具调用）、`ai_events.md`（可读转译）、`run.json`（选择、轴变化、token 与费用）。AI 请求在途时游戏时间暂停，保证每次请求都有对应事件被记录。
+
+### AI 导演：请求频率与两段式选项（后续改进）
+- 请求频率：待触发池目标为 1 条（池里已有事件就不再预取），非强制请求之间至少间隔 60 游戏秒，事件投放间隔 90 游戏秒；危机、探索抵达、事件链到期、记忆压缩、工程开放仍为强制请求。
+- `inject_event` 改为两段式：先写 `options`（由情境、现状与玩家历史自然产生，不必覆盖三个方向），再填 `assessment`（逐选项判断实际体现的隐式倾向，先写 rationale 再给数值）。旧的逐选项 `hidden_axis_deltas` 仍兼容。
+- 倾向偏置：上下文新增 `tendency_profile`（三路线占比、近期选择轴向、引擎按占比加权抽签的 `suggested_theme`，含 `challenge` 反噬题材），系统提示要求事件题材贴合建议题材。

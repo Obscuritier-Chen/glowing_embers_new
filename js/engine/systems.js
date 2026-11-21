@@ -220,7 +220,7 @@
     a.result = G.val(c.result) || '';
     a.next = c.next || null;
     if (c.schedule) E.sched.push({ id: c.schedule.event, at: G.S.t + c.schedule.delay });
-    G.emit('choice', { eventId: a.id, title: G.val(ev.title), index: i, label: G.val(c.text) });
+    G.emit('choice', { eventId: a.id, title: G.val(ev.title), index: i, label: G.val(c.text), effects: c.effects || {} });
   };
   G.closeEvent = function () {
     const E = G.S.ev, a = E.active; if (!a) return;

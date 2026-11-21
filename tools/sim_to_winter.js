@@ -92,9 +92,10 @@ async function mockProvider(req) {
   if (req.reason === 'compress_memory') return [{ name: 'update_memory', input: { macro_summary: '（mock）聚落在荒原上站稳了脚跟。', truth_fragments: ['（mock）旧世钻探'] } }];
   if (req.reason === 'foundation_projects') return c.world_meta.unlocked_routes.map(r => ({ name: 'set_project_flavor', input: { project_id: { tech: 'steam_core', magic: 'alchemy_hall', faith: 'vigil_altar' }[r], description: '（mock）带着第一阶段记忆的工程。' } }));
   return [{ name: 'inject_event', input: { event_type: req.reason.startsWith('exploration') ? 'exploration' : 'single', title: '（mock）荒原来客 #' + n, narrative_text: '风里传来脚步声。', options: [
-    Object.assign({ label: '工程实证', hint_text: 'mock', hidden_axis_deltas: { alignment_tech: 3 } }, ro({ wood: -5, notes: 3 })),
-    Object.assign({ label: '触媒秘仪', hint_text: 'mock', hidden_axis_deltas: { alignment_magic: 3 } }, ro({ pale_ash: -3, notes: 3 })),
-    Object.assign({ label: '虔信守望', hint_text: 'mock', hidden_axis_deltas: { alignment_religion: 3 } }, ro({ food: -3, population_total: 1 })) ] } }];
+    Object.assign({ label: '工程实证', hint_text: 'mock' }, ro({ wood: -5, notes: 3 })),
+    Object.assign({ label: '触媒秘仪', hint_text: 'mock' }, ro({ pale_ash: -3, notes: 3 })),
+    Object.assign({ label: '虔信守望', hint_text: 'mock' }, ro({ food: -3, population_total: 1 })) ],
+    assessment: [{ option_index: 0, rationale: 'mock', axis_deltas: { alignment_tech: 3 } }, { option_index: 1, rationale: 'mock', axis_deltas: { alignment_magic: 3 } }, { option_index: 2, rationale: 'mock', axis_deltas: { alignment_religion: 3 } }] } }];
 }
 A.setProvider(async req => {
   const t = Date.now(); usage.requests++;

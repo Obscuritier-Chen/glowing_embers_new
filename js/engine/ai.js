@@ -171,7 +171,7 @@
       while (D.pool.length > CFG.poolMax + 1) { const k = D.pool.findIndex(x => !x.urgent); D.pool.splice(k < 0 ? 0 : k, 1); }
       D.lastInject = S.t; st.lastTitle = p.title; st.fails = 0;
       pruneDyn();
-      note('注入事件：' + p.title + (warn.length ? '（' + warn.length + ' 条警告）' : ''));
+      note('注入事件：' + p.title + (warn.length ? '（警告：' + warn.slice(0, 3).join('；') + '）' : ''));
       if (p.deliver === 'now') deliver(true);
       return { ok: true, event_id: id, queued: D.pool.length, warnings: warn };
     } catch (e) { console.error(e); return { ok: false, errors: [String(e.message || e)] }; }
@@ -291,7 +291,8 @@
   /* ---------- 请求调度 ---------- */
   function request(reason, opt) {
     opt = opt || {};
-    if (!active() || st.inFlight || st.fails >= 3) return false;
+    if (!active()) { if (opt.force) note('请求被忽略：导演未启用或未配置接口（请勾选「启用导演」并填写 Key/地址）'); return false; }
+    if (st.inFlight || st.fails >= 3) return false;
     const D = G.S.director, now = Date.now();
     if (!opt.force && (D.pool.length >= CFG.poolMax || now - st.lastReqAt < CFG.minGapMs * 2.5)) return false;
     if (now - st.lastReqAt < CFG.minGapMs) { st.pendingReason = reason; st.pendingOpt = opt; return false; }
